@@ -20,7 +20,12 @@ def compute_distance_between_images(
     Returns:
         The horizontal and vertical distance between images (in meters).
     """
-    raise NotImplementedError()
+    footprintx, footprinty = compute_image_footprint_on_surface(camera, dataset_spec.height)
+
+    distance_hori = (1 - dataset_spec.overlap) * footprintx
+    distance_vert = (1 - dataset_spec.sidelap) * footprinty
+
+    return distance_hori, distance_vert
 
 def compute_speed_during_photo_capture(
     camera: Camera, dataset_spec: DatasetSpec, allowed_movement_px: float = 1

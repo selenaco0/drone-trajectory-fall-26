@@ -62,4 +62,31 @@ def generate_photo_plan_on_grid(
         Scan plan as a list of waypoints.
 
     """
-    raise NotImplementedError()
+    distance_hori, distance_vert = compute_distance_between_images(camera, dataset_spec) # Part 1: Compute the maximum distance between two images.
+
+    num_images_hori = math.ceil(dataset_spec.scan_dimension_x / distance_hori) # Part 2: Layer the images such that they cover the whole scan area.
+    num_images_vert = math.ceil(dataset_spec.scan_dimension_y / distance_vert)
+
+    spacing_hori = dataset_spec.scan_dimension_x / num_images_hori
+    spacing_vert = dataset_spec.scan_dimension_y / num_images_vert
+
+    positions_hori = []
+    for i in range(num_images_hori):
+        positions_hori.append((i + 0.5) * spacing_hori) # Center is (i * spacing_x + (i+1) * spacing_x) / 2
+    positions_vert = []
+    for j in range(num_images_vert):
+        positions_vert.append((j + 0.5) * spacing_vert)
+
+    speed = compute_speed_during_photo_capture(camera, dataset_spec) # Part 3: Assign the speed to each waypoint.
+
+    waypoints = []
+    for row_position in range(len(positions_vert)):
+        y = positions_vert[row_position]
+        if row_position % 2 == 0:
+            row_hori = positions_hori
+        else:
+            row_hori = list(reversed(positions_hori))
+        for x in row_hori:
+            waypoints.append(Waypoint(x=x, y=y, z=dataset_spec.height, speed=speed))
+
+    return waypoints
